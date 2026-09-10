@@ -11,19 +11,11 @@ local LSM = LibStub("LibSharedMedia-3.0");
 -- Intercept Messages Sent by other Add-Ons that use CombatText_AddMessage
 --
 -- FIX: hooksecurefunc() hard-errors ("... is not a function") if
--- CombatText_AddMessage doesn't exist yet, which happens when Blizzard's
--- own floating combat text is disabled (Blizzard_CombatText never loads).
+-- CombatText_AddMessage doesn't exist, which happens when Blizzard's own
+-- Floating Combat Text is disabled (Blizzard_CombatText never loads).
 -- That error used to abort this whole file, so x.blizzardOptions below
--- was never defined either. We now force-load Blizzard_CombatText and
--- only attach the hook if the function actually exists.
-if not CombatText_AddMessage then
-  if C_AddOns and C_AddOns.LoadAddOn then
-    C_AddOns.LoadAddOn("Blizzard_CombatText")
-  elseif UIParentLoadAddOn then
-    UIParentLoadAddOn("Blizzard_CombatText")
-  end
-end
-
+-- was never defined either. We only attach the hook if the function
+-- actually exists; otherwise we skip it silently - xCT+ doesn't need it.
 if type(CombatText_AddMessage) == "function" then
   hooksecurefunc('CombatText_AddMessage', function(message, scrollFunction, r, g, b, displayType, isStaggered)
     if not x.db.profile.blizzardFCT.enableFloatingCombatText then
@@ -32,8 +24,6 @@ if type(CombatText_AddMessage) == "function" then
       x:AddMessage("general", message, {r, g, b})
     end
   end)
-else
-  print("|cffFF0000[xCT+ DEBUG]|r CombatText_AddMessage is unavailable (Blizzard's Floating Combat Text is likely disabled) - the intercept hook was skipped, xCT+ will still work normally otherwise.")
 end
 
 -- Interface - Addons (Ace3 Blizzard Options)
